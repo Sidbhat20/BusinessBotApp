@@ -37,8 +37,8 @@ export function WelcomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.cta}>
-          <Button label="Get started" onPress={() => navigation.replace(zeroSetup ? 'ProfileSetup' : 'ApiKeySetup')} />
-          <Text style={styles.footer}>{zeroSetup ? 'No API setup required for this build.' : 'Your data stays on your device.'}</Text>
+          <Button label="Get started" onPress={() => navigation.replace('ProfileSetup')} />
+          <Text style={styles.footer}>{zeroSetup ? 'No API setup required for this build.' : 'Setup is managed by the app owner for this build.'}</Text>
         </View>
       </LinearGradient>
     </Screen>

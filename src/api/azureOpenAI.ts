@@ -222,20 +222,24 @@ function fallbackDraft({ profile, contact, tone, keyMoments }: DraftRequest): Dr
       ? 'I came away from our conversation seeing strong potential to work together.'
       : 'It was a pleasure connecting with you.';
 
+  const contextLine = keyMoments
+    ? `I wanted to follow up on our conversation about ${keyMoments.replace(/[.]+$/, '')}.`
+    : 'I wanted to follow up on our recent conversation.';
+
   const subject = contact.company
-    ? `Great connecting with you, ${contact.name || contact.company}`
+    ? `Following up with ${contact.name || contact.company}`
     : 'Following up from our conversation';
 
   const body = [
     `Hi ${contact.name || 'there'},`,
     '',
     intro,
-    keyMoments ? `I especially enjoyed our discussion about ${keyMoments.replace(/[.]+$/, '')}.` : '',
+    contextLine,
     `I am ${profile.name}, ${profile.designation} at ${profile.company}. ${profile.roleDescription}`,
     contact.company
       ? `I would love to continue the conversation around opportunities relevant to ${contact.company}.`
       : 'I would love to continue the conversation.',
-    'If it works for you, I can share a few concrete next steps and coordinate a time to connect.',
+    'If it works for you, I can share a few specific next steps and coordinate a short call.',
     '',
     'Warm regards,',
     profile.name,
@@ -262,6 +266,9 @@ export async function draftFollowUpEmail(config: AzureConfig, req: DraftRequest)
               '- Plain text only.',
               '- 120 to 180 words.',
               '- Include a clear next step.',
+              '- Use the conversation context directly and specifically; do not ignore it.',
+              '- Mention the most relevant topic, intent, or follow-up point from the context in natural language.',
+              '- Do not use placeholder text or generic filler if context is provided.',
               `- ${toneLine(req.tone)}`,
               '',
               'Sender profile:',

@@ -49,11 +49,9 @@ export function RootNavigator() {
     );
   }
 
-  const zeroSetup = hasHostedProxy();
-
   let initialRoute: keyof RootStackParamList = 'Home';
-  if (!isConfigured) initialRoute = zeroSetup ? 'ProfileSetup' : 'Welcome';
-  else if (!profile) initialRoute = 'ProfileSetup';
+  if (!profile) initialRoute = 'ProfileSetup';
+  else if (!isConfigured && !hasHostedProxy()) initialRoute = 'Home';
 
   return (
     <NavigationContainer theme={navTheme}>

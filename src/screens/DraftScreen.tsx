@@ -13,7 +13,7 @@ import { useContacts } from '../stores/contactsStore';
 import { useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { draftFollowUpEmail } from '../api/azureOpenAI';
-import { openEmailDraft, openGmailWebDraft } from '../utils/gmail';
+import { openEmailDraft, openZohoWorkspace } from '../utils/gmail';
 import { uuid } from '../utils/id';
 import { Tone, DraftEntry } from '../types';
 import { colors, radii, spacing, typography } from '../theme';
@@ -61,15 +61,15 @@ export function DraftScreen({ route, navigation }: Props) {
     }
   };
 
-  const onOpenGmailWeb = async () => {
+  const onOpenZohoWorkspace = async () => {
     if (!contact.details.email) {
       Alert.alert('No email', 'Add the recipient email in the contact details first.');
       return;
     }
     try {
-      await openGmailWebDraft(contact.details.email, draft.subject, draft.body);
+      await openZohoWorkspace(contact.details.email, draft.subject, draft.body);
     } catch (err: any) {
-      Alert.alert('Could not open Gmail', err?.message || 'Try copying instead.');
+      Alert.alert('Could not open Zoho Workspace', err?.message || 'Try copying instead.');
     }
   };
 
@@ -125,7 +125,7 @@ export function DraftScreen({ route, navigation }: Props) {
         </View>
         <View style={styles.actionsRowSecondary}>
           <ActionButton icon={<Copy size={18} color={colors.textPrimary} />} label="Copy" onPress={onCopy} />
-          <ActionButton icon={<Mail size={18} color={colors.textPrimary} />} label="Open Gmail web" onPress={onOpenGmailWeb} />
+          <ActionButton icon={<Mail size={18} color={colors.textPrimary} />} label="Connect Zoho Workspace" onPress={onOpenZohoWorkspace} />
         </View>
 
         <Text style={styles.section}>Rewrite in another tone</Text>

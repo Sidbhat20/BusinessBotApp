@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Alert, PermissionsAndroid, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { launchCamera, launchImageLibrary, Asset } from 'react-native-image-picker';
 import { Camera as CameraIcon, ImagePlus, Settings as SettingsIcon, Users, Mail } from 'lucide-react-native';
@@ -14,6 +14,7 @@ import { useContacts } from '../stores/contactsStore';
 import { useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { extractBusinessCardFromImage } from '../api/azureOpenAI';
+import { hasHostedProxy } from '../config/appConfig';
 import { uuid } from '../utils/id';
 import { Contact } from '../types';
 import { RootStackParamList } from '../navigation/types';
@@ -28,6 +29,8 @@ export function HomeScreen({ navigation }: Props) {
 
   const [loading, setLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState('Reading the business card...');
+
+  const hasBackend = hasHostedProxy() || Boolean(azure.apiKey.trim());
 
   const recentDrafts = contacts
     .flatMap((c) => (c.drafts || []).map((d) => ({ contact: c, draft: d })))
@@ -69,7 +72,28 @@ export function HomeScreen({ navigation }: Props) {
     }
   }, [azure, navigation, upsertContact]);
 
+  const ensureCameraPermission = async () => {
+    if (Platform.OS !== 'android') return true;
+    const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
+      title: 'Camera access needed',
+      message: 'Business Bot needs camera access to scan a business card.',
+      buttonPositive: 'Allow',
+      buttonNegative: 'Deny',
+    });
+    return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
   const onScan = async () => {
+    if (!hasBackend) {
+      Alert.alert('AI backend not configured', 'This build needs an app-managed backend or API key before scanning can work.');
+      return;
+    }
+    const permissionGranted = await ensureCameraPermission();
+    if (!permissionGranted) {
+      Alert.alert('Camera permission needed', 'Please allow camera access and try again.');
+      return;
+    }
+
     const result = await launchCamera({
       mediaType: 'photo',
       includeBase64: true,
@@ -85,6 +109,11 @@ export function HomeScreen({ navigation }: Props) {
   };
 
   const onUpload = async () => {
+    if (!hasBackend) {
+      Alert.alert('AI backend not configured', 'This build needs an app-managed backend or API key before scanning can work.');
+      return;
+    }
+
     const result = await launchImageLibrary({
       mediaType: 'photo',
       includeBase64: true,

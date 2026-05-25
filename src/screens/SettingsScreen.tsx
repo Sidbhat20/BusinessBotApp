@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { Header } from '../components/Header';
-import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { hasHostedProxy } from '../config/appConfig';
@@ -22,15 +21,7 @@ export function SettingsScreen({ navigation }: Props) {
   const clearProfile = useProfile((s) => s.clearProfile);
   const resetContacts = useContacts((s) => s.reset);
 
-  const [apiKey, setApiKey] = useState(azure.apiKey);
-  const [saved, setSaved] = useState(false);
   const zeroSetup = hasHostedProxy();
-
-  const onSave = () => {
-    setAzure({ apiKey: zeroSetup ? '' : apiKey.trim() });
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  };
 
   const onReset = () => {
     Alert.alert(
@@ -45,7 +36,7 @@ export function SettingsScreen({ navigation }: Props) {
             clearProfile();
             resetContacts();
             setAzure({ apiKey: '' });
-            navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
+            navigation.reset({ index: 0, routes: [{ name: 'ProfileSetup' }] });
           },
         },
       ],
@@ -56,28 +47,20 @@ export function SettingsScreen({ navigation }: Props) {
     <Screen>
       <Header title="Settings" onBack={() => navigation.goBack()} />
 
-      <Text style={styles.section}>{zeroSetup ? 'Hosted AI backend' : 'Azure OpenAI'}</Text>
-      {!zeroSetup ? (
-        <TextField
-          label="API key"
-          value={apiKey}
-          onChangeText={setApiKey}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-      ) : (
-        <Card>
-          <Text style={styles.value}>This build uses a hosted backend, so end users do not need to enter an API key.</Text>
-        </Card>
-      )}
+      <Text style={styles.section}>AI backend</Text>
+      <Card>
+        <Text style={styles.value}>
+          {zeroSetup
+            ? 'This build uses a hosted backend, so end users do not need to enter an API key.'
+            : 'API setup is hidden from the app flow. If scanning fails, the app owner still needs to configure a backend for this build.'}
+        </Text>
+      </Card>
       <Card style={{ marginTop: spacing.md }}>
         <Text style={styles.label}>Configured endpoint</Text>
         <Text style={styles.value}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
         <Text style={[styles.label, { marginTop: spacing.md }]}>Configured deployment model</Text>
         <Text style={styles.value}>{azure.model || DEFAULT_AZURE_MODEL}</Text>
       </Card>
-      {!zeroSetup ? <Button label={saved ? 'Saved' : 'Save changes'} onPress={onSave} style={{ marginTop: spacing.md }} /> : null}
 
       <Text style={[styles.section, { marginTop: spacing.xxl }]}>Your profile</Text>
       {profile ? (
