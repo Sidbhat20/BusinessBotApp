@@ -173,13 +173,23 @@ const styles = StyleSheet.create({
 
   actionBtn: {
     flex: 1,
-    height: 50,
+    minHeight: 50,
     borderRadius: radii.md,
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.borderSubtle,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 10,
   },
   actionBtnPrimary: { backgroundColor: colors.accent, borderColor: colors.accent },
-  actionLabel: { ...typography.button, color: colors.textPrimary, marginLeft: spacing.xs },
+  actionLabel: {
+    ...typography.button,
+    color: colors.textPrimary,
+    marginLeft: spacing.xs,
+    flexShrink: 1,
+    textAlign: 'center',
+    fontSize: 13,
+    lineHeight: 16,
+  },
 
   section: { ...typography.micro, color: colors.textSecondary, textTransform: 'uppercase', marginTop: spacing.xl, marginBottom: spacing.sm },
   toneRow: { flexDirection: 'row', gap: spacing.xs, flexWrap: 'wrap' },

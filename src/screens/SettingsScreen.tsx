@@ -5,7 +5,6 @@ import { Screen } from '../components/Screen';
 import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { hasHostedProxy } from '../config/appConfig';
 import { useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { useContacts } from '../stores/contactsStore';
@@ -20,8 +19,6 @@ export function SettingsScreen({ navigation }: Props) {
   const profile = useProfile((s) => s.profile);
   const clearProfile = useProfile((s) => s.clearProfile);
   const resetContacts = useContacts((s) => s.reset);
-
-  const zeroSetup = hasHostedProxy();
 
   const onReset = () => {
     Alert.alert(
@@ -47,20 +44,7 @@ export function SettingsScreen({ navigation }: Props) {
     <Screen>
       <Header title="Settings" onBack={() => navigation.goBack()} />
 
-      <Text style={styles.section}>AI backend</Text>
-      <Card>
-        <Text style={styles.value}>
-          {zeroSetup
-            ? 'This build uses a hosted backend, so end users do not need to enter an API key.'
-            : 'API setup is hidden from the app flow. If scanning fails, the app owner still needs to configure a backend for this build.'}
-        </Text>
-      </Card>
-      <Card style={{ marginTop: spacing.md }}>
-        <Text style={styles.label}>Status</Text>
-        <Text style={styles.value}>{zeroSetup ? 'Connected to Supabase Edge Function backend.' : 'Backend is not connected yet.'}</Text>
-      </Card>
-
-      <Text style={[styles.section, { marginTop: spacing.xxl }]}>Your profile</Text>
+      <Text style={styles.section}>Your profile</Text>
       {profile ? (
         <Card>
           <Text style={styles.label}>{profile.name}</Text>
