@@ -3,6 +3,7 @@ import { ActivityIndicator, View, StyleSheet } from 'react-native';
 import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { colors } from '../theme';
+import { hasHostedProxy } from '../config/appConfig';
 import { useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { WelcomeScreen } from '../screens/WelcomeScreen';
@@ -48,8 +49,10 @@ export function RootNavigator() {
     );
   }
 
+  const zeroSetup = hasHostedProxy();
+
   let initialRoute: keyof RootStackParamList = 'Home';
-  if (!isConfigured) initialRoute = 'Welcome';
+  if (!isConfigured) initialRoute = zeroSetup ? 'ProfileSetup' : 'Welcome';
   else if (!profile) initialRoute = 'ProfileSetup';
 
   return (

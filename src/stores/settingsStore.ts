@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AzureConfig } from '../types';
+import { APP_CONFIG, hasHostedProxy } from '../config/appConfig';
 import { jsonStorage } from './storage';
 
 type SettingsState = {
@@ -39,7 +40,7 @@ export const useSettings = create<SettingsState>()(
       azure: DEFAULT_AZURE,
       hydrated: false,
       setAzure: (config) => set({ azure: normalizeAzure({ ...get().azure, ...config }) }),
-      isConfigured: () => Boolean(get().azure.apiKey.trim()),
+      isConfigured: () => hasHostedProxy() || Boolean(get().azure.apiKey.trim()),
     }),
     {
       name: 'businessbot-settings',
@@ -49,7 +50,11 @@ export const useSettings = create<SettingsState>()(
         return {
           ...currentState,
           ...persisted,
-          azure: normalizeAzure(persisted.azure),
+          azure: normalizeAzure({
+            endpoint: APP_CONFIG.proxyBaseUrl ? DEFAULT_AZURE_ENDPOINT : persisted.azure?.endpoint,
+            model: APP_CONFIG.proxyBaseUrl ? DEFAULT_AZURE_MODEL : persisted.azure?.model,
+            apiKey: persisted.azure?.apiKey,
+          }),
           hydrated: false,
         };
       },

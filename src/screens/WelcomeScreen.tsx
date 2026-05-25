@@ -4,6 +4,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Screen } from '../components/Screen';
 import { Button } from '../components/Button';
+import { hasHostedProxy } from '../config/appConfig';
 import { BrandMark } from '../components/Brand';
 import { Pill } from '../components/Pill';
 import { colors, spacing, typography } from '../theme';
@@ -12,6 +13,8 @@ import { RootStackParamList } from '../navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Welcome'>;
 
 export function WelcomeScreen({ navigation }: Props) {
+  const zeroSetup = hasHostedProxy();
+
   return (
     <Screen scroll={false} padded={false}>
       <LinearGradient
@@ -34,8 +37,8 @@ export function WelcomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.cta}>
-          <Button label="Get started" onPress={() => navigation.replace('ApiKeySetup')} />
-          <Text style={styles.footer}>Your data stays on your device.</Text>
+          <Button label="Get started" onPress={() => navigation.replace(zeroSetup ? 'ProfileSetup' : 'ApiKeySetup')} />
+          <Text style={styles.footer}>{zeroSetup ? 'No API setup required for this build.' : 'Your data stays on your device.'}</Text>
         </View>
       </LinearGradient>
     </Screen>

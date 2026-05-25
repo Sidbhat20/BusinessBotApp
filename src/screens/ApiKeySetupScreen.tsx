@@ -5,6 +5,7 @@ import { Screen } from '../components/Screen';
 import { Header } from '../components/Header';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
+import { hasHostedProxy } from '../config/appConfig';
 import { DEFAULT_AZURE_ENDPOINT, DEFAULT_AZURE_MODEL, useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { colors, spacing, typography } from '../theme';
@@ -19,13 +20,14 @@ export function ApiKeySetupScreen({ navigation }: Props) {
 
   const [apiKey, setApiKey] = useState(azure.apiKey);
   const [error, setError] = useState<string | null>(null);
+  const zeroSetup = hasHostedProxy();
 
   const onContinue = () => {
-    if (!apiKey.trim()) {
+    if (!zeroSetup && !apiKey.trim()) {
       setError('Add the Azure OpenAI API key.');
       return;
     }
-    setAzure({ apiKey: apiKey.trim() });
+    setAzure({ apiKey: zeroSetup ? '' : apiKey.trim() });
     setError(null);
     navigation.replace(hasProfile ? 'Home' : 'ProfileSetup');
   };
@@ -38,19 +40,23 @@ export function ApiKeySetupScreen({ navigation }: Props) {
         onBack={() => navigation.goBack()}
       />
       <Text style={styles.intro}>
-        This build already has the Azure endpoint and deployment name preconfigured. You only need to enter your Azure OpenAI API key on this device.
+        {zeroSetup
+          ? 'This build is connected to a hosted Business Bot backend, so there is no API setup required on the device.'
+          : 'This build already has the Azure endpoint and deployment name preconfigured. You only need to enter your Azure OpenAI API key on this device.'}
       </Text>
 
       <View style={{ marginTop: spacing.lg }}>
-        <TextField
-          label="API key"
-          value={apiKey}
-          onChangeText={setApiKey}
-          placeholder="Paste your Azure OpenAI key"
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        {!zeroSetup ? (
+          <TextField
+            label="API key"
+            value={apiKey}
+            onChangeText={setApiKey}
+            placeholder="Paste your Azure OpenAI key"
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+        ) : null}
         <Text style={styles.metaLabel}>Configured endpoint</Text>
         <Text style={styles.metaValue}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
         <Text style={[styles.metaLabel, { marginTop: spacing.md }]}>Configured deployment model</Text>

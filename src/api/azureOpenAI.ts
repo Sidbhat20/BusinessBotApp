@@ -1,4 +1,5 @@
 import { AzureConfig, ContactDetails, ExtractionResult, Profile, Tone } from '../types';
+import { getProxyBaseUrl, hasHostedProxy } from '../config/appConfig';
 import { normalizeEmail, normalizePhone } from '../utils/email';
 
 type ResponsesPayload = {
@@ -54,13 +55,35 @@ function normaliseContact(record: any): ContactDetails {
 }
 
 async function createResponse(config: AzureConfig, input: unknown, maxOutputTokens = 900): Promise<string> {
-  const endpoint = config.endpoint.replace(/\/+$/, '');
   const payload: ResponsesPayload = {
     model: config.model,
     input,
     max_output_tokens: maxOutputTokens,
   };
 
+  if (hasHostedProxy()) {
+    const response = await fetch(`${getProxyBaseUrl()}/api/mobile/responses`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Business Bot backend request failed (${response.status}): ${errorText}`);
+    }
+
+    const data = await response.json();
+    const text = parseResponseText(data);
+    if (!text) {
+      throw new Error('Business Bot backend returned an empty response.');
+    }
+    return text;
+  }
+
+  const endpoint = config.endpoint.replace(/\/+$/, '');
   const response = await fetch(`${endpoint}/responses`, {
     method: 'POST',
     headers: {

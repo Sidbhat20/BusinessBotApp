@@ -6,6 +6,7 @@ import { Header } from '../components/Header';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
+import { hasHostedProxy } from '../config/appConfig';
 import { DEFAULT_AZURE_ENDPOINT, DEFAULT_AZURE_MODEL, useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { useContacts } from '../stores/contactsStore';
@@ -23,9 +24,10 @@ export function SettingsScreen({ navigation }: Props) {
 
   const [apiKey, setApiKey] = useState(azure.apiKey);
   const [saved, setSaved] = useState(false);
+  const zeroSetup = hasHostedProxy();
 
   const onSave = () => {
-    setAzure({ apiKey: apiKey.trim() });
+    setAzure({ apiKey: zeroSetup ? '' : apiKey.trim() });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };
@@ -54,22 +56,28 @@ export function SettingsScreen({ navigation }: Props) {
     <Screen>
       <Header title="Settings" onBack={() => navigation.goBack()} />
 
-      <Text style={styles.section}>Azure OpenAI</Text>
-      <TextField
-        label="API key"
-        value={apiKey}
-        onChangeText={setApiKey}
-        secureTextEntry
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
+      <Text style={styles.section}>{zeroSetup ? 'Hosted AI backend' : 'Azure OpenAI'}</Text>
+      {!zeroSetup ? (
+        <TextField
+          label="API key"
+          value={apiKey}
+          onChangeText={setApiKey}
+          secureTextEntry
+          autoCapitalize="none"
+          autoCorrect={false}
+        />
+      ) : (
+        <Card>
+          <Text style={styles.value}>This build uses a hosted backend, so end users do not need to enter an API key.</Text>
+        </Card>
+      )}
       <Card style={{ marginTop: spacing.md }}>
         <Text style={styles.label}>Configured endpoint</Text>
         <Text style={styles.value}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
         <Text style={[styles.label, { marginTop: spacing.md }]}>Configured deployment model</Text>
         <Text style={styles.value}>{azure.model || DEFAULT_AZURE_MODEL}</Text>
       </Card>
-      <Button label={saved ? 'Saved' : 'Save changes'} onPress={onSave} style={{ marginTop: spacing.md }} />
+      {!zeroSetup ? <Button label={saved ? 'Saved' : 'Save changes'} onPress={onSave} style={{ marginTop: spacing.md }} /> : null}
 
       <Text style={[styles.section, { marginTop: spacing.xxl }]}>Your profile</Text>
       {profile ? (
