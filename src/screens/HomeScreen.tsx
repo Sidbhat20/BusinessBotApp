@@ -72,15 +72,39 @@ export function HomeScreen({ navigation }: Props) {
     }
   }, [azure, navigation, upsertContact]);
 
-  const ensureCameraPermission = async () => {
-    if (Platform.OS !== 'android') return true;
-    const granted = await PermissionsAndroid.request(PermissionsAndroid.PERMISSIONS.CAMERA, {
-      title: 'Camera access needed',
-      message: 'Business Bot needs camera access to scan a business card.',
+  const requestAndroidPermission = async (permission: any, title: string, message: string) => {
+    const granted = await PermissionsAndroid.request(permission, {
+      title,
+      message,
       buttonPositive: 'Allow',
       buttonNegative: 'Deny',
     });
     return granted === PermissionsAndroid.RESULTS.GRANTED;
+  };
+
+  const ensureCameraPermission = async () => {
+    if (Platform.OS !== 'android') return true;
+    return requestAndroidPermission(
+      PermissionsAndroid.PERMISSIONS.CAMERA,
+      'Camera access needed',
+      'Business Bot needs camera access to scan a business card.',
+    );
+  };
+
+  const ensureGalleryPermission = async () => {
+    if (Platform.OS !== 'android') return true;
+    if (Platform.Version >= 33) {
+      return requestAndroidPermission(
+        PermissionsAndroid.PERMISSIONS.READ_MEDIA_IMAGES,
+        'Photos access needed',
+        'Business Bot needs access to your photos to import a business card image.',
+      );
+    }
+    return requestAndroidPermission(
+      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+      'Storage access needed',
+      'Business Bot needs storage access to import a business card image.',
+    );
   };
 
   const onScan = async () => {
@@ -111,6 +135,12 @@ export function HomeScreen({ navigation }: Props) {
   const onUpload = async () => {
     if (!hasBackend) {
       Alert.alert('AI backend not configured', 'This build needs an app-managed backend or API key before scanning can work.');
+      return;
+    }
+
+    const permissionGranted = await ensureGalleryPermission();
+    if (!permissionGranted) {
+      Alert.alert('Photos permission needed', 'Please allow photo access and try again.');
       return;
     }
 

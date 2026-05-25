@@ -1,5 +1,5 @@
 import { AzureConfig, ContactDetails, ExtractionResult, Profile, Tone } from '../types';
-import { getProxyBaseUrl, hasHostedProxy } from '../config/appConfig';
+import { getHostedHeaders, getHostedResponsesUrl, hasHostedProxy } from '../config/appConfig';
 import { normalizeEmail, normalizePhone } from '../utils/email';
 
 type ResponsesPayload = {
@@ -62,10 +62,11 @@ async function createResponse(config: AzureConfig, input: unknown, maxOutputToke
   };
 
   if (hasHostedProxy()) {
-    const response = await fetch(`${getProxyBaseUrl()}/api/mobile/responses`, {
+    const response = await fetch(getHostedResponsesUrl(), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        ...getHostedHeaders(),
       },
       body: JSON.stringify(payload),
     });

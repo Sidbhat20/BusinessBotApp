@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AzureConfig } from '../types';
-import { APP_CONFIG, hasHostedProxy } from '../config/appConfig';
+import { hasHostedProxy } from '../config/appConfig';
 import { jsonStorage } from './storage';
 
 type SettingsState = {
@@ -51,8 +51,8 @@ export const useSettings = create<SettingsState>()(
           ...currentState,
           ...persisted,
           azure: normalizeAzure({
-            endpoint: APP_CONFIG.proxyBaseUrl ? DEFAULT_AZURE_ENDPOINT : persisted.azure?.endpoint,
-            model: APP_CONFIG.proxyBaseUrl ? DEFAULT_AZURE_MODEL : persisted.azure?.model,
+            endpoint: hasHostedProxy() ? DEFAULT_AZURE_ENDPOINT : persisted.azure?.endpoint,
+            model: hasHostedProxy() ? DEFAULT_AZURE_MODEL : persisted.azure?.model,
             apiKey: persisted.azure?.apiKey,
           }),
           hydrated: false,

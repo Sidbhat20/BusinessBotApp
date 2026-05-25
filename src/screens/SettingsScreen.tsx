@@ -6,7 +6,7 @@ import { Header } from '../components/Header';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { hasHostedProxy } from '../config/appConfig';
-import { DEFAULT_AZURE_ENDPOINT, DEFAULT_AZURE_MODEL, useSettings } from '../stores/settingsStore';
+import { useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { useContacts } from '../stores/contactsStore';
 import { colors, spacing, typography } from '../theme';
@@ -56,10 +56,8 @@ export function SettingsScreen({ navigation }: Props) {
         </Text>
       </Card>
       <Card style={{ marginTop: spacing.md }}>
-        <Text style={styles.label}>Configured endpoint</Text>
-        <Text style={styles.value}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
-        <Text style={[styles.label, { marginTop: spacing.md }]}>Configured deployment model</Text>
-        <Text style={styles.value}>{azure.model || DEFAULT_AZURE_MODEL}</Text>
+        <Text style={styles.label}>Status</Text>
+        <Text style={styles.value}>{zeroSetup ? 'Connected to Supabase Edge Function backend.' : 'Backend is not connected yet.'}</Text>
       </Card>
 
       <Text style={[styles.section, { marginTop: spacing.xxl }]}>Your profile</Text>

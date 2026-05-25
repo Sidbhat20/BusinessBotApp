@@ -6,7 +6,7 @@ import { Header } from '../components/Header';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
 import { hasHostedProxy } from '../config/appConfig';
-import { DEFAULT_AZURE_ENDPOINT, DEFAULT_AZURE_MODEL, useSettings } from '../stores/settingsStore';
+import { useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { colors, spacing, typography } from '../theme';
 import { RootStackParamList } from '../navigation/types';
@@ -35,8 +35,8 @@ export function ApiKeySetupScreen({ navigation }: Props) {
   return (
     <Screen>
       <Header
-        eyebrow="Step 1 of 2"
-        title="Connect Azure OpenAI"
+        eyebrow="Setup"
+        title={zeroSetup ? 'Backend connected' : 'Connect your AI backend'}
         onBack={() => navigation.goBack()}
       />
       <Text style={styles.intro}>
@@ -57,10 +57,6 @@ export function ApiKeySetupScreen({ navigation }: Props) {
             autoCorrect={false}
           />
         ) : null}
-        <Text style={styles.metaLabel}>Configured endpoint</Text>
-        <Text style={styles.metaValue}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
-        <Text style={[styles.metaLabel, { marginTop: spacing.md }]}>Configured deployment model</Text>
-        <Text style={styles.metaValue}>{azure.model || DEFAULT_AZURE_MODEL}</Text>
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
 
@@ -74,16 +70,5 @@ export function ApiKeySetupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   intro: { ...typography.body, color: colors.textSecondary },
   error: { ...typography.caption, color: colors.error, marginTop: spacing.xs },
-  metaLabel: {
-    ...typography.micro,
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    marginTop: spacing.sm,
-  },
-  metaValue: {
-    ...typography.body,
-    color: colors.textPrimary,
-    marginTop: 4,
-  },
   cta: { marginTop: spacing.xl },
 });
