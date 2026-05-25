@@ -10,26 +10,49 @@ type SettingsState = {
   isConfigured: () => boolean;
 };
 
-const DEFAULT_AZURE: AzureConfig = {
+export const DEFAULT_AZURE_ENDPOINT = 'https://ai-research-development-resource.openai.azure.com/openai/v1';
+export const DEFAULT_AZURE_MODEL = 'gpt-5.4';
+
+export const DEFAULT_AZURE: AzureConfig = {
   apiKey: '',
-  endpoint: 'https://ai-research-development-resource.openai.azure.com/openai/v1',
-  model: 'gpt-5.4',
+  endpoint: DEFAULT_AZURE_ENDPOINT,
+  model: DEFAULT_AZURE_MODEL,
 };
+
+function normalizeAzure(config?: Partial<AzureConfig>): AzureConfig {
+  return {
+    apiKey: typeof config?.apiKey === 'string' ? config.apiKey.trim() : '',
+    endpoint:
+      typeof config?.endpoint === 'string' && config.endpoint.trim()
+        ? config.endpoint.trim()
+        : DEFAULT_AZURE_ENDPOINT,
+    model:
+      typeof config?.model === 'string' && config.model.trim()
+        ? config.model.trim()
+        : DEFAULT_AZURE_MODEL,
+  };
+}
 
 export const useSettings = create<SettingsState>()(
   persist(
     (set, get) => ({
       azure: DEFAULT_AZURE,
       hydrated: false,
-      setAzure: (config) => set({ azure: { ...get().azure, ...config } }),
-      isConfigured: () => {
-        const a = get().azure;
-        return Boolean(a.apiKey && a.endpoint && a.model);
-      },
+      setAzure: (config) => set({ azure: normalizeAzure({ ...get().azure, ...config }) }),
+      isConfigured: () => Boolean(get().azure.apiKey.trim()),
     }),
     {
       name: 'businessbot-settings',
       storage: jsonStorage,
+      merge: (persistedState, currentState) => {
+        const persisted = (persistedState as Partial<SettingsState> | undefined) ?? {};
+        return {
+          ...currentState,
+          ...persisted,
+          azure: normalizeAzure(persisted.azure),
+          hydrated: false,
+        };
+      },
       onRehydrateStorage: () => (state) => {
         state?.hydrated && state;
         // mark hydrated after rehydration

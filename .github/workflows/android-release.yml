@@ -6,20 +6,6 @@ on:
       - 'v*'
       - 'app-v*'
   workflow_dispatch:
-    inputs:
-      tag:
-        description: Release tag to create/upload (example: v0.1.0)
-        required: true
-        type: string
-      release_name:
-        description: Optional release title
-        required: false
-        type: string
-      prerelease:
-        description: Mark the GitHub release as a prerelease
-        required: false
-        default: false
-        type: boolean
 
 permissions:
   contents: write
@@ -65,36 +51,14 @@ jobs:
         id: meta
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG="${{ inputs.tag }}"
-            NAME="${{ inputs.release_name }}"
-            PRERELEASE="${{ inputs.prerelease }}"
-            if [ -z "$NAME" ]; then
-              NAME="Business Bot ${TAG}"
-            fi
-          else
-            TAG="${GITHUB_REF_NAME}"
-            NAME="Business Bot ${TAG}"
-            PRERELEASE="false"
+          TAG="${GITHUB_REF_NAME}"
+          if [ -z "$TAG" ]; then
+            TAG="manual-build-${GITHUB_RUN_NUMBER}"
           fi
 
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "name=$NAME" >> "$GITHUB_OUTPUT"
-          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
-
-      - name: Create tag for manual release
-        if: github.event_name == 'workflow_dispatch'
-        shell: bash
-        run: |
-          TAG="${{ steps.meta.outputs.tag }}"
-          if git rev-parse "$TAG" >/dev/null 2>&1; then
-            echo "Tag $TAG already exists"
-          else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git tag "$TAG"
-            git push origin "$TAG"
-          fi
+          echo "name=Business Bot ${TAG}" >> "$GITHUB_OUTPUT"
+          echo "asset=BusinessBot-${TAG}.apk" >> "$GITHUB_OUTPUT"
 
       - name: Build release APK
         working-directory: android
@@ -105,19 +69,19 @@ jobs:
 
       - name: Prepare APK asset
         shell: bash
-        run: cp "$APK_PATH" "BusinessBot-${{ steps.meta.outputs.tag }}.apk"
+        run: cp "$APK_PATH" "${{ steps.meta.outputs.asset }}"
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
-          name: BusinessBot-${{ steps.meta.outputs.tag }}-apk
-          path: BusinessBot-${{ steps.meta.outputs.tag }}.apk
+          name: ${{ steps.meta.outputs.asset }}
+          path: ${{ steps.meta.outputs.asset }}
 
       - name: Create GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.meta.outputs.tag }}
           name: ${{ steps.meta.outputs.name }}
-          prerelease: ${{ steps.meta.outputs.prerelease == 'true' }}
           generate_release_notes: true
-          files: BusinessBot-${{ steps.meta.outputs.tag }}.apk
+          files: ${{ steps.meta.outputs.asset }}

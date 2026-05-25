@@ -6,7 +6,7 @@ import { Header } from '../components/Header';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
-import { useSettings } from '../stores/settingsStore';
+import { DEFAULT_AZURE_ENDPOINT, DEFAULT_AZURE_MODEL, useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { useContacts } from '../stores/contactsStore';
 import { colors, spacing, typography } from '../theme';
@@ -22,12 +22,10 @@ export function SettingsScreen({ navigation }: Props) {
   const resetContacts = useContacts((s) => s.reset);
 
   const [apiKey, setApiKey] = useState(azure.apiKey);
-  const [endpoint, setEndpoint] = useState(azure.endpoint);
-  const [model, setModel] = useState(azure.model);
   const [saved, setSaved] = useState(false);
 
   const onSave = () => {
-    setAzure({ apiKey: apiKey.trim(), endpoint: endpoint.trim(), model: model.trim() });
+    setAzure({ apiKey: apiKey.trim() });
     setSaved(true);
     setTimeout(() => setSaved(false), 1500);
   };
@@ -44,7 +42,7 @@ export function SettingsScreen({ navigation }: Props) {
           onPress: () => {
             clearProfile();
             resetContacts();
-            setAzure({ apiKey: '', endpoint: '', model: '' });
+            setAzure({ apiKey: '' });
             navigation.reset({ index: 0, routes: [{ name: 'Welcome' }] });
           },
         },
@@ -65,21 +63,13 @@ export function SettingsScreen({ navigation }: Props) {
         autoCapitalize="none"
         autoCorrect={false}
       />
-      <TextField
-        label="Endpoint"
-        value={endpoint}
-        onChangeText={setEndpoint}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <TextField
-        label="Deployment model"
-        value={model}
-        onChangeText={setModel}
-        autoCapitalize="none"
-        autoCorrect={false}
-      />
-      <Button label={saved ? 'Saved' : 'Save changes'} onPress={onSave} />
+      <Card style={{ marginTop: spacing.md }}>
+        <Text style={styles.label}>Configured endpoint</Text>
+        <Text style={styles.value}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
+        <Text style={[styles.label, { marginTop: spacing.md }]}>Configured deployment model</Text>
+        <Text style={styles.value}>{azure.model || DEFAULT_AZURE_MODEL}</Text>
+      </Card>
+      <Button label={saved ? 'Saved' : 'Save changes'} onPress={onSave} style={{ marginTop: spacing.md }} />
 
       <Text style={[styles.section, { marginTop: spacing.xxl }]}>Your profile</Text>
       {profile ? (

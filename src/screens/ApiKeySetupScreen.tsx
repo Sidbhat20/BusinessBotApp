@@ -5,7 +5,7 @@ import { Screen } from '../components/Screen';
 import { Header } from '../components/Header';
 import { TextField } from '../components/TextField';
 import { Button } from '../components/Button';
-import { useSettings } from '../stores/settingsStore';
+import { DEFAULT_AZURE_ENDPOINT, DEFAULT_AZURE_MODEL, useSettings } from '../stores/settingsStore';
 import { useProfile } from '../stores/profileStore';
 import { colors, spacing, typography } from '../theme';
 import { RootStackParamList } from '../navigation/types';
@@ -18,8 +18,6 @@ export function ApiKeySetupScreen({ navigation }: Props) {
   const hasProfile = useProfile((s) => Boolean(s.profile));
 
   const [apiKey, setApiKey] = useState(azure.apiKey);
-  const [endpoint, setEndpoint] = useState(azure.endpoint);
-  const [model, setModel] = useState(azure.model);
   const [error, setError] = useState<string | null>(null);
 
   const onContinue = () => {
@@ -27,15 +25,7 @@ export function ApiKeySetupScreen({ navigation }: Props) {
       setError('Add the Azure OpenAI API key.');
       return;
     }
-    if (!endpoint.trim() || !/^https?:\/\//.test(endpoint)) {
-      setError('Endpoint must start with https://');
-      return;
-    }
-    if (!model.trim()) {
-      setError('Add a deployment model name.');
-      return;
-    }
-    setAzure({ apiKey: apiKey.trim(), endpoint: endpoint.trim(), model: model.trim() });
+    setAzure({ apiKey: apiKey.trim() });
     setError(null);
     navigation.replace(hasProfile ? 'Home' : 'ProfileSetup');
   };
@@ -48,7 +38,7 @@ export function ApiKeySetupScreen({ navigation }: Props) {
         onBack={() => navigation.goBack()}
       />
       <Text style={styles.intro}>
-        Business Bot uses your Azure OpenAI deployment for vision extraction and email drafting. Keys stay on this device.
+        This build already has the Azure endpoint and deployment name preconfigured. You only need to enter your Azure OpenAI API key on this device.
       </Text>
 
       <View style={{ marginTop: spacing.lg }}>
@@ -61,22 +51,10 @@ export function ApiKeySetupScreen({ navigation }: Props) {
           autoCapitalize="none"
           autoCorrect={false}
         />
-        <TextField
-          label="Endpoint"
-          value={endpoint}
-          onChangeText={setEndpoint}
-          placeholder="https://your-resource.openai.azure.com/openai/v1"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
-        <TextField
-          label="Deployment model"
-          value={model}
-          onChangeText={setModel}
-          placeholder="gpt-5.4"
-          autoCapitalize="none"
-          autoCorrect={false}
-        />
+        <Text style={styles.metaLabel}>Configured endpoint</Text>
+        <Text style={styles.metaValue}>{azure.endpoint || DEFAULT_AZURE_ENDPOINT}</Text>
+        <Text style={[styles.metaLabel, { marginTop: spacing.md }]}>Configured deployment model</Text>
+        <Text style={styles.metaValue}>{azure.model || DEFAULT_AZURE_MODEL}</Text>
         {error ? <Text style={styles.error}>{error}</Text> : null}
       </View>
 
@@ -90,5 +68,16 @@ export function ApiKeySetupScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   intro: { ...typography.body, color: colors.textSecondary },
   error: { ...typography.caption, color: colors.error, marginTop: spacing.xs },
+  metaLabel: {
+    ...typography.micro,
+    color: colors.textSecondary,
+    textTransform: 'uppercase',
+    marginTop: spacing.sm,
+  },
+  metaValue: {
+    ...typography.body,
+    color: colors.textPrimary,
+    marginTop: 4,
+  },
   cta: { marginTop: spacing.xl },
 });
