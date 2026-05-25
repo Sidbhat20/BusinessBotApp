@@ -39,6 +39,23 @@ cd android
 # APK at android/app/build/outputs/apk/release/
 ```
 
+Current release builds are signed with the default debug keystore so they are easy to install for testing. Before publishing to the Play Store, replace that with a proper production keystore.
+
+## GitHub APK release
+
+A GitHub Actions workflow is included at `.github/workflows/android-release.yml`.
+
+You can use it in either of these ways:
+
+1. Push a tag like `v0.1.0` or `app-v0.1.0`
+2. Or run the **Android APK Release** workflow manually from the Actions tab and enter a tag
+
+The workflow will:
+- install the Android build toolchain
+- build the Android release APK from `app/android`
+- upload the APK as a workflow artifact
+- attach the APK to a GitHub Release so you can download it directly
+
 ## Configure
 
 On first launch the app asks for:
